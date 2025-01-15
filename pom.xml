@@ -38,7 +38,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -66,6 +65,50 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+            <!-- Apache Commons Math for StandardScaler -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.6.1</version>
+            </dependency>
+
+            <!-- ND4J for RandomForestRegressor and other ML utilities -->
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-api</artifactId>
+                <version>1.0.0-beta7</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native-platform</artifactId>
+                <version>1.0.0-beta7</version>
+            </dependency>
+
+            <!-- Joblib for loading model files -->
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-core</artifactId>
+                <version>2.6.0</version>
+            </dependency>
+
+        <!-- Smile for machine learning -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-data</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-plot</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
