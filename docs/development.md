@@ -126,7 +126,7 @@ public class PredictionService {
     }
 
     public Map<String, Double> predictCareerProbabilities(StudentProfile profile) {
-        String url = "http://localhost:5000/predict";
+        String url = "http://localhost:8082/predict";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
