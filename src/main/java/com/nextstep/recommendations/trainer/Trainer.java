@@ -17,10 +17,9 @@ public class Trainer {
     public void train() throws Exception {
         DataSource source = new DataSource(Config.MODEL_DIR + "/features.arff");
         Instances data = source.getDataSet();
-        data.setClassIndex(data.numAttributes() - 1);
+        data.setClassIndex(data.numAttributes() - 1); // Set career as the class attribute
 
         RandomForest forest = new RandomForest();
-
         CVParameterSelection gridSearch = new CVParameterSelection();
         gridSearch.setClassifier(forest);
         gridSearch.setNumFolds(5);

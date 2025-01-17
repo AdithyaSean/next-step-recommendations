@@ -13,6 +13,7 @@ public class Config {
     public static final Map<Integer, Double> EDUCATION_LEVEL_DIST = new HashMap<>();
     public static final Map<Integer, List<Integer>> AL_SUBJECTS_BY_STREAM = new HashMap<>();
     public static final Map<Integer, double[]> CAREER_SUCCESS_RANGES = new HashMap<>();
+    public static final Map<Integer, List<Integer>> CAREERS_BY_EDUCATION_LEVEL = new HashMap<>();
 
     static {
         EDUCATION_LEVELS.put("OL", 0);
@@ -69,7 +70,12 @@ public class Config {
         CAREER_SUCCESS_RANGES.put(CAREERS.get("Business"), new double[]{0.45, 0.85});
         CAREER_SUCCESS_RANGES.put(CAREERS.get("Teaching"), new double[]{0.40, 0.80});
         CAREER_SUCCESS_RANGES.put(CAREERS.get("Research"), new double[]{0.55, 0.88});
+
+        CAREERS_BY_EDUCATION_LEVEL.put(EDUCATION_LEVELS.get("OL"), List.of(CAREERS.get("Teaching"), CAREERS.get("Business")));
+        CAREERS_BY_EDUCATION_LEVEL.put(EDUCATION_LEVELS.get("AL"), List.of(CAREERS.get("Engineering"), CAREERS.get("Medicine"), CAREERS.get("IT")));
+        CAREERS_BY_EDUCATION_LEVEL.put(EDUCATION_LEVELS.get("UNI"), List.of(CAREERS.get("Engineering"), CAREERS.get("Medicine"), CAREERS.get("IT"), CAREERS.get("Research")));
     }
+
     public static final double[] GPA_RANGE = {2.0, 4.0};
     public static final int NUM_STUDENTS = 5000;
     public static final String DATA_DIR = "./data";

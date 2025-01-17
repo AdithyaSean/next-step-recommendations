@@ -11,6 +11,7 @@ import weka.core.DenseInstance;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class Predictor {
@@ -24,8 +25,8 @@ public class Predictor {
 
     public Map<String, Double> predict(int educationLevel, Map<String, Double> olResults, Integer alStream, Map<String, Double> alResults, Double gpa) throws Exception {
         Instances dataset = DataSource.read(Config.MODEL_DIR + "/features.arff");
-
         dataset.setClassIndex(dataset.numAttributes() - 1);
+
         DenseInstance instance = new DenseInstance(dataset.numAttributes());
         instance.setDataset(dataset);
 
@@ -53,7 +54,7 @@ public class Predictor {
 
         Map<String, Double> careerProbabilities = new HashMap<>();
         for (int i = 0; i < predictions.length; i++) {
-            String career = Config.CAREERS.keySet().toArray()[i].toString();
+            String career = dataset.classAttribute().value(i);
             careerProbabilities.put(career, predictions[i] * 100);
         }
 
