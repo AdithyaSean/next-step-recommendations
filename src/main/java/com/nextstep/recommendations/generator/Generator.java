@@ -7,11 +7,8 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSink;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.io.IOException;
+import java.util.*;
 
 public class Generator {
 
@@ -95,42 +92,28 @@ public class Generator {
                 instance.setValue(attributes.get(index++), (int) profile.get("OL_subject_" + entry.getValue() + "_score"));
             }
             Integer alStream = (Integer) profile.get("AL_stream");
-            if (alStream != null) {
-                instance.setValue(attributes.get(index++), alStream);
-            } else {
-                instance.setValue(attributes.get(index++), 0);
-        }
+            instance.setValue(attributes.get(index++), Objects.requireNonNullElse(alStream, 0));
 
             for (Map.Entry<String, Integer> entry : Config.AL_SUBJECTS.entrySet()) {
                 Integer subjectScore = (Integer) profile.get("AL_subject_" + entry.getValue() + "_score");
-                if (subjectScore != null) {
-                    instance.setValue(attributes.get(index++), subjectScore);
-            } else {
-                    instance.setValue(attributes.get(index++), 0);
-        }
-    }
+                instance.setValue(attributes.get(index++), Objects.requireNonNullElse(subjectScore, 0));
+            }
 
             Integer universityScore = (Integer) profile.get("university_score");
-            if (universityScore != null) {
-                instance.setValue(attributes.get(index++), universityScore);
-            } else {
-                instance.setValue(attributes.get(index++), 0);
-    }
+            instance.setValue(attributes.get(index++), Objects.requireNonNullElse(universityScore, 0));
 
             Double gpa = (Double) profile.get("gpa");
-            if (gpa != null) {
-                instance.setValue(attributes.get(index), gpa);
-            } else {
-                instance.setValue(attributes.get(index), 0.0);
-    }
+            instance.setValue(attributes.get(index), Objects.requireNonNullElse(gpa, 0.0));
 
             dataset.add(instance);
-    }
+        }
 
         File dataDir = new File(Config.DATA_DIR);
         if (!dataDir.exists()) {
-            dataDir.mkdirs();
-}
+            if (!dataDir.mkdirs()) {
+                throw new IOException("Failed to create directory: " + Config.DATA_DIR);
+            }
+        }
         DataSink.write(Config.DATA_DIR + "/student_profiles.arff", dataset);
     }
 

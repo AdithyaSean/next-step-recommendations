@@ -59,7 +59,7 @@ public class PredictionService {
         try {
             // Load the pre-trained model
             model = Model.newInstance("career_predictor");
-            model.load(new File("models/career_predictor.joblib"));
+            model.load(new File("models/career_predictor.model"));
 
             // Create a predictor
             predictor = model.newPredictor(new CareerTranslator());
