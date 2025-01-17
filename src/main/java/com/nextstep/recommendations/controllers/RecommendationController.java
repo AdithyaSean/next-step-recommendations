@@ -15,11 +15,6 @@ public class RecommendationController {
     private final Predictor predictor;
 
     @Autowired
-    @Autowired
-    @Autowired
-    @Autowired
-    @Autowired
-    @Autowired
     public RecommendationController(Predictor predictor) {
         this.predictor = predictor;
     }
@@ -39,8 +34,6 @@ public class RecommendationController {
     public String train() throws Exception {
         Trainer trainer = new Trainer();
         trainer.train();
-    @PostMapping("/generate")
-    @PostMapping("/generate")
         return "Model trained successfully!";
     }
 
@@ -48,6 +41,6 @@ public class RecommendationController {
     public String generate() {
         Generator generator = new Generator();
         generator.generate();
-        return "Data generated successfully!";
+        return "Model trained successfully!";
     }
 }
