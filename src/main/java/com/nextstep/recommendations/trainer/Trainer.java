@@ -1,14 +1,15 @@
 package com.nextstep.recommendations.trainer;
 
 import com.nextstep.recommendations.config.Config;
-import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
+import weka.classifiers.meta.CVParameterSelection;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.SerializationHelper;
 import weka.classifiers.evaluation.Evaluation;
-import weka.classifiers.meta.CVParameterSelection;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 public class Trainer {
@@ -31,13 +32,21 @@ public class Trainer {
 
         gridSearch.buildClassifier(data);
 
+        File modelDir = new File(Config.MODEL_DIR);
+        if (!modelDir.exists() && !modelDir.mkdirs()) {
+            throw new IOException("Failed to create directory: " + Config.MODEL_DIR);
+        }
+
         SerializationHelper.write(Config.MODEL_DIR + "/career_predictor.model", gridSearch);
 
         Evaluation eval = new Evaluation(data);
         eval.crossValidateModel(gridSearch, data, 5, new Random(1));
         System.out.println(eval.toSummaryString());
-        System.out.println(eval.toClassDetailsString());
         System.out.println(eval.toMatrixString());
+
+        if (data.classAttribute().isNominal() && data.numClasses() > 1) {
+            System.out.println(eval.toClassDetailsString());
+        }
     }
 
     public static void main(String[] args) throws Exception {
