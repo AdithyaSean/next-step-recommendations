@@ -1,27 +1,30 @@
 package com.nextstep.recommendations.predictor;
 
 import com.nextstep.recommendations.config.Config;
-
-import weka.core.Instance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.classifiers.Classifier;
-import weka.classifiers.trees.RandomForest;
+import weka.core.DenseInstance;
 
 import java.util.Map;
 import java.util.HashMap;
 
+@Service
 public class Predictor {
 
-    private Classifier model;
+    private final Classifier model;
 
-    public Predictor(String modelPath) throws Exception {
-        model = (Classifier) weka.core.SerializationHelper.read(modelPath);
+    @Autowired
+    public Predictor(@Value("${model.path}") String modelPath) throws Exception {
+        this.model = (Classifier) weka.core.SerializationHelper.read(modelPath);
     }
 
     public Map<String, Double> predict(int educationLevel, Map<String, Double> olResults, Integer alStream, Map<String, Double> alResults, Double gpa) throws Exception {
         Instances dataset = DataSource.read(Config.MODEL_DIR + "/feature_order.arff");
-        Instance instance = new Instance(dataset.numAttributes());
+        DenseInstance instance = new DenseInstance(dataset.numAttributes());
         instance.setDataset(dataset);
 
         instance.setValue(dataset.attribute("education_level"), educationLevel);

@@ -7,7 +7,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.SerializationHelper;
 import weka.classifiers.evaluation.Evaluation;
-import weka.classifiers.meta.GridSearch;
+import weka.classifiers.meta.CVParameterSelection;
 
 import java.util.Random;
 
@@ -20,25 +20,24 @@ public class Trainer {
 
         RandomForest forest = new RandomForest();
 
-        GridSearch gridSearch = new GridSearch();
+        CVParameterSelection gridSearch = new CVParameterSelection();
         gridSearch.setClassifier(forest);
-        gridSearch.setEvaluation(new Evaluation(data));
+        gridSearch.setNumFolds(5);
         gridSearch.setSeed(new Random().nextInt());
-        gridSearch.setOptions(new String[]{
-            "-E", "r2",
-            "-X", "5",
-            "-S", "1",
-            "-W", "weka.classifiers.trees.RandomForest",
-            "--", "-P", "100", "-I", "100", "-K", "0", "-M", "1.0", "-V", "0.001", "-S", "1"
-        });
+
+        gridSearch.addCVParameter("P 100 100 1");
+        gridSearch.addCVParameter("M 1.0 1.0 1");
+        gridSearch.addCVParameter("K 0 0 1");
 
         gridSearch.buildClassifier(data);
 
-        SerializationHelper.write(Config.MODEL_DIR + "/career_predictor.model", gridSearch.getBestClassifier());
+        SerializationHelper.write(Config.MODEL_DIR + "/career_predictor.model", gridSearch);
 
         Evaluation eval = new Evaluation(data);
-        eval.crossValidateModel(gridSearch.getBestClassifier(), data, 5, new Random(1));
+        eval.crossValidateModel(gridSearch, data, 5, new Random(1));
         System.out.println(eval.toSummaryString());
+        System.out.println(eval.toClassDetailsString());
+        System.out.println(eval.toMatrixString());
     }
 
     public static void main(String[] args) throws Exception {

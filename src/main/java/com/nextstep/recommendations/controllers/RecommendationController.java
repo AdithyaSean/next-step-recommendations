@@ -9,11 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/recommendations")
+@RequestMapping("/recommendations")
 public class RecommendationController {
 
-    @Autowired
-    private Predictor predictor;
+    private final Predictor predictor;
+
+    public RecommendationController(Predictor predictor) {
+        this.predictor = predictor;
+    }
 
     @PostMapping("/predict")
     public Map<String, Double> predict(@RequestBody PredictionRequest request) throws Exception {
