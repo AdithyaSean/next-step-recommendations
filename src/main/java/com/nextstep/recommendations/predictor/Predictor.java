@@ -23,7 +23,9 @@ public class Predictor {
     }
 
     public Map<String, Double> predict(int educationLevel, Map<String, Double> olResults, Integer alStream, Map<String, Double> alResults, Double gpa) throws Exception {
-        Instances dataset = DataSource.read(Config.MODEL_DIR + "/feature_order.arff");
+        Instances dataset = DataSource.read(Config.MODEL_DIR + "/features.arff");
+
+        dataset.setClassIndex(dataset.numAttributes() - 1);
         DenseInstance instance = new DenseInstance(dataset.numAttributes());
         instance.setDataset(dataset);
 

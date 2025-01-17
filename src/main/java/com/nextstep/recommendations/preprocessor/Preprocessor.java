@@ -45,12 +45,7 @@ public class Preprocessor {
         }
         SerializationHelper.write(Config.MODEL_DIR + "/feature_order.model", featureOrder);
 
-        // Save processed data
-        File processedDir = new File(Config.PROCESSED_DIR);
-        if (!processedDir.exists() && !processedDir.mkdirs()) {
-            throw new IOException("Failed to create directory: " + Config.PROCESSED_DIR);
-        }
-        DataSink.write(Config.PROCESSED_DIR + "/features.arff", scaledFeatures);
+        DataSink.write(Config.MODEL_DIR + "/features.arff", scaledFeatures);
     }
 
     public static void main(String[] args) throws Exception {

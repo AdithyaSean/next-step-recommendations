@@ -72,7 +72,6 @@ public class Config {
     }
     public static final double[] GPA_RANGE = {2.0, 4.0};
     public static final int NUM_STUDENTS = 5000;
-    public static final String DATA_DIR = "./data/raw";
-    public static final String PROCESSED_DIR = "./data/processed";
+    public static final String DATA_DIR = "./data";
     public static final String MODEL_DIR = "./models";
 }

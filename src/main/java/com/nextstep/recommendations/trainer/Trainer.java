@@ -15,7 +15,7 @@ import java.util.Random;
 public class Trainer {
 
     public void train() throws Exception {
-        DataSource source = new DataSource(Config.PROCESSED_DIR + "/features.arff");
+        DataSource source = new DataSource(Config.MODEL_DIR + "/features.arff");
         Instances data = source.getDataSet();
         data.setClassIndex(data.numAttributes() - 1);
 
