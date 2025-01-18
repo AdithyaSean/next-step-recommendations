@@ -39,9 +39,4 @@ public class Preprocessor {
 
         DataSink.write(Config.MODEL_DIR + "/features.arff", scaledFeatures);
     }
-
-    public static void main(String[] args) throws Exception {
-        Preprocessor preprocessor = new Preprocessor();
-        preprocessor.preprocess();
-    }
 }
