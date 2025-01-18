@@ -7,7 +7,7 @@ This document provides detailed information about the REST API endpoints exposed
 ## **Base URL**
 The base URL for all API endpoints is:
 ```
-http://localhost:8080/recommendations
+http://localhost:8082/recommendations
 ```
 
 ---
@@ -30,7 +30,7 @@ Generates synthetic student profiles for training and testing purposes.
 
 #### **Example Request:**
 ```bash
-curl -X POST http://localhost:8080/recommendations/generate
+curl -X POST http://localhost:8082/recommendations/generate
 ```
 
 ---
@@ -51,7 +51,7 @@ Trains the machine learning model using the preprocessed data.
 
 #### **Example Request:**
 ```bash
-curl -X POST http://localhost:8080/recommendations/train
+curl -X POST http://localhost:8082/recommendations/train
 ```
 
 ---
@@ -101,7 +101,7 @@ Predicts career probabilities based on a student's educational profile.
 
 #### **Example Request:**
 ```bash
-curl -X POST http://localhost:8080/recommendations/predict \
+curl -X POST http://localhost:8082/recommendations/predict \
 -H "Content-Type: application/json" \
 -d '{
   "educationLevel": 1,
