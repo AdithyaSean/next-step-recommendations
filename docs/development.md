@@ -1,235 +1,167 @@
-# Development Documentation: Next Step Recommendations Microservice
+### Documentation for the Next-Step Recommendations Microservice
 
-## Overview
+This documentation provides an overview of the key components in the Next-Step Recommendations microservice. The microservice is designed to predict career probabilities based on a student's educational background, including their Ordinary Level (OL) and Advanced Level (AL) results, as well as their GPA (if applicable).
 
-The **Next Step Recommendations** microservice is responsible for hosting the pre-trained career prediction model and providing real-time career recommendations based on student profiles. The microservice integrates with the **Next Step Users** microservice to fetch student data and uses the pre-trained machine learning model to generate career predictions. The microservice exposes REST endpoints for real-time predictions and batch predictions.
+---
 
-## Features
+### 1. **Predictor.java**
 
-- **Real-time Career Predictions**: Predict career probabilities for a given student profile.
-- **Batch Predictions**: Predict career probabilities for multiple student profiles in a single request.
-- **Model Versioning**: Support for multiple versions of the trained model.
-- **Caching**: Cache frequently requested predictions to improve performance.
+#### **Purpose:**
+The `Predictor` class is responsible for loading a pre-trained machine learning model and using it to predict career probabilities based on a student's educational profile.
 
-## Tech Stack
+#### **Key Methods:**
+- **`Predictor(String modelPath)`**: Constructor that loads the pre-trained model from the specified path.
+- **`predict(int educationLevel, Map<String, Double> olResults, Integer alStream, Map<String, Double> alResults, Double gpa)`**: Predicts career probabilities based on the provided student profile.
 
-- **Spring Boot**: For building the microservice.
-- **Java ML Libraries**: Use libraries like `DJL` (Deep Java Library) or `Tribuo` to load and use the pre-trained models.
-- **REST API**: Exposes endpoints for predictions.
-- **Caching**: Spring Cache for caching predictions.
+#### **Dependencies:**
+- **Weka**: Used for loading the model and making predictions.
+- **Spring Framework**: Used for dependency injection and service management.
 
-## Prerequisites
-
-1. **Java Environment**: Ensure Java 17+ is installed.
-2. **Spring Boot Application**: A Spring Boot application with REST API endpoints for handling predictions.
-3. **Pre-trained Model Files**: The trained model files (`career_predictor.joblib`, `model_metadata.joblib`, `feature_selector.joblib`, `scaler.joblib`) should be available in the `models` directory.
-
-## Steps to Integrate ML Models with Spring Boot
-
-### 1. Load the Pre-trained Model in Java
-
-Use a Java library like `DJL` or `Tribuo` to load the pre-trained model files. Below is an example using `DJL` to load the model and make predictions.
-
-#### Example: `PredictionService.java`
-
+#### **Example Usage:**
 ```java
-import ai.djl.Model;
-import ai.djl.inference.Predictor;
-import ai.djl.modality.Classifications;
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.NDList;
-import ai.djl.ndarray.NDManager;
-import ai.djl.translate.TranslateException;
-import ai.djl.translate.Translator;
-import ai.djl.translate.TranslatorContext;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-@Service
-public class PredictionService {
-
-    private Model model;
-    private Predictor<NDList, Classifications> predictor;
-
-    @PostConstruct
-    public void init() {
-        try {
-            // Load the pre-trained model
-            model = Model.newInstance("career_predictor");
-            model.load(new File("models/career_predictor.model"));
-
-            // Create a predictor
-            predictor = model.newPredictor(new CareerTranslator());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load model", e);
-        }
-    }
-
-    public Map<String, Double> predictCareerProbabilities(StudentProfile profile) {
-        try (NDManager manager = NDManager.newBaseManager()) {
-            // Convert student profile to NDArray
-            NDArray features = convertProfileToNDArray(manager, profile);
-
-            // Make prediction
-            NDList input = new NDList(features);
-            Classifications classifications = predictor.predict(input);
-
-            // Convert predictions to a map
-            Map<String, Double> careerProbabilities = new HashMap<>();
-            classifications.forEach(c -> careerProbabilities.put(c.getClassName(), c.getProbability() * 100));
-
-            return careerProbabilities;
-        } catch (TranslateException e) {
-            throw new RuntimeException("Prediction failed", e);
-        }
-    }
-
-    private NDArray convertProfileToNDArray(NDManager manager, StudentProfile profile) {
-        // Convert student profile to a feature vector
-        double[] features = new double[featureNames.size()];
-        Arrays.fill(features, -1.0);  // Initialize with -1
-
-        // Set basic features
-        features[featureOrder.get("education_level")] = profile.getEducationLevel();
-        features[featureOrder.get("AL_stream")] = profile.getAlStream();
-        features[featureOrder.get("gpa")] = profile.getGpa();
-
-        // Set OL subject scores
-        for (Map.Entry<String, Double> entry : profile.getOlResults().entrySet()) {
-            String colName = "OL_subject_" + entry.getKey() + "_score";
-            if (featureOrder.containsKey(colName)) {
-                features[featureOrder.get(colName)] = entry.getValue();
-            }
-        }
-
-        // Set AL subject scores
-        if (profile.getAlResults() != null) {
-            for (Map.Entry<String, Double> entry : profile.getAlResults().entrySet()) {
-                String colName = "AL_subject_" + entry.getKey() + "_score";
-                if (featureOrder.containsKey(colName)) {
-                    features[featureOrder.get(colName)] = entry.getValue();
-                }
-            }
-        }
-
-        // Scale the features (if needed)
-        double[] scaledFeatures = scaler.transform(new double[][]{features})[0];
-
-        return manager.create(scaledFeatures);
-    }
-
-    private static class CareerTranslator implements Translator<NDList, Classifications> {
-        @Override
-        public NDList processInput(TranslatorContext ctx, NDList input) {
-            return input;
-        }
-
-        @Override
-        public Classifications processOutput(TranslatorContext ctx, NDList output) {
-            return new Classifications(output);
-        }
-    }
-}
+Predictor predictor = new Predictor("path/to/model");
+Map<String, Double> predictions = predictor.predict(1, olResults, 0, alResults, 3.75);
 ```
 
-### 2. Create a REST Controller for Predictions
+---
 
-Create a REST controller to expose the prediction functionality.
+### 2. **Config.java**
 
-#### Example: `PredictionController.java`
+#### **Purpose:**
+The `Config` class contains static configurations and mappings for education levels, subjects, streams, and careers. It also defines constants such as file paths and numerical ranges used throughout the application.
 
+#### **Key Constants:**
+- **`EDUCATION_LEVELS`**: Maps education levels (OL, AL, UNI) to integer values.
+- **`OL_SUBJECTS`**: Maps Ordinary Level subjects to integer values.
+- **`AL_STREAMS`**: Maps Advanced Level streams to integer values.
+- **`AL_SUBJECTS`**: Maps Advanced Level subjects to integer values.
+- **`CAREERS`**: Maps career options to integer values.
+- **`MODEL_DIR`**: Directory where trained models and preprocessed data are stored.
+
+#### **Example Usage:**
 ```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-
-@RestController
-@RequestMapping("/predictions")
-public class PredictionController {
-
-    private final PredictionService predictionService;
-
-    @Autowired
-    public PredictionController(PredictionService predictionService) {
-        this.predictionService = predictionService;
-    }
-
-    @PostMapping("/career")
-    public Map<String, Double> predictCareer(@RequestBody StudentProfile profile) {
-        return predictionService.predictCareerProbabilities(profile);
-    }
-}
+int eduType = Config.EDUCATION_LEVELS.get("OL");
+String modelPath = Config.MODEL_DIR + "/career_predictor.model";
 ```
 
-### 3. Define the Student Profile Model
+---
 
-Define a `StudentProfile` class to represent the input data for predictions.
+### 3. **Preprocessor.java**
 
-#### Example: `StudentProfile.java`
+#### **Purpose:**
+The `Preprocessor` class is responsible for preprocessing the raw student data before it is used for training or prediction. This includes standardizing the features and saving the preprocessed data to a file.
 
+#### **Key Methods:**
+- **`preprocess()`**: Reads the raw data, standardizes the features, and saves the preprocessed data and scaler model to the specified directory.
+
+#### **Dependencies:**
+- **Weka**: Used for data standardization and serialization.
+
+#### **Example Usage:**
 ```java
-import java.util.Map;
-
-public class StudentProfile {
-    private int educationLevel;
-    private int alStream;
-    private double gpa;
-    private Map<String, Double> olResults;
-    private Map<String, Double> alResults;
-
-    // Getters and setters
-}
+Preprocessor preprocessor = new Preprocessor();
+preprocessor.preprocess();
 ```
 
-### 4. Test the Integration
+---
 
-Run the Spring Boot application and test the prediction endpoint using a tool like Postman or cURL.
+### 4. **Generator.java**
 
-#### Example Request:
+#### **Purpose:**
+The `Generator` class generates synthetic student profiles for training and testing purposes. It creates a dataset with random values for education levels, subject scores, and GPAs.
 
-```json
+#### **Key Methods:**
+- **`generate()`**: Generates a list of synthetic student profiles.
+- **`saveToARFF(List<Map<String, Object>> data)`**: Saves the generated profiles to an ARFF file format, which is compatible with Weka.
+
+#### **Example Usage:**
+```java
+Generator generator = new Generator();
+List<Map<String, Object>> data = generator.generate();
+generator.saveToARFF(data);
+```
+
+---
+
+### 5. **Trainer.java**
+
+#### **Purpose:**
+The `Trainer` class is responsible for training a machine learning model using the preprocessed data. It uses a Random Forest classifier with cross-validation for hyperparameter tuning.
+
+#### **Key Methods:**
+- **`train()`**: Trains the model using the preprocessed data and saves the trained model to a file.
+
+#### **Dependencies:**
+- **Weka**: Used for model training and evaluation.
+- **Spring Framework**: Used for service management.
+
+#### **Example Usage:**
+```java
+Trainer trainer = new Trainer();
+trainer.train();
+```
+
+---
+
+### 6. **RecommendationController.java**
+
+#### **Purpose:**
+The `RecommendationController` class is a Spring REST controller that exposes endpoints for generating data, training the model, and making predictions.
+
+#### **Key Endpoints:**
+- **`POST /recommendations/predict`**: Accepts a `PredictionRequest` and returns predicted career probabilities.
+- **`POST /recommendations/train`**: Triggers the training of the machine learning model.
+- **`POST /recommendations/generate`**: Generates synthetic student profiles.
+
+#### **Example Usage:**
+```java
+// Example request to predict career probabilities
+POST /recommendations/predict
 {
-  "educationLevel": 1,
-  "alStream": 0,
-  "gpa": 3.75,
-  "olResults": {
-    "0": 85,
-    "1": 78,
-    "2": 72,
-    "3": 65,
-    "4": 70,
-    "5": 75
-  },
-  "alResults": {
-    "0": 88,
-    "1": 82,
-    "2": 90
-  }
+    "educationLevel": 1,
+    "olResults": {"0": 85.0, "1": 78.0, "2": 72.0},
+    "alStream": 0,
+    "alResults": {"0": 88.0, "1": 82.0, "2": 90.0},
+    "gpa": 3.75
 }
 ```
 
-#### Example Response:
+---
 
-```json
-{
-  "Engineering": 85.3,
-  "Medicine": 78.5,
-  "IT": 72.1,
-  "Business": 65.4,
-  "Teaching": 70.2,
-  "Research": 75.8
-}
+### 7. **PredictionRequest.java**
+
+#### **Purpose:**
+The `PredictionRequest` class is a data transfer object (DTO) used to encapsulate the input data required for making a prediction.
+
+#### **Fields:**
+- **`educationLevel`**: The education level of the student (OL, AL, UNI).
+- **`olResults`**: A map of Ordinary Level subject scores.
+- **`alStream`**: The Advanced Level stream (if applicable).
+- **`alResults`**: A map of Advanced Level subject scores (if applicable).
+- **`gpa`**: The student's GPA (if applicable).
+
+#### **Example Usage:**
+```java
+PredictionRequest request = new PredictionRequest();
+request.setEducationLevel(1);
+request.setOlResults(Map.of("0", 85.0, "1", 78.0, "2", 72.0));
+request.setAlStream(0);
+request.setAlResults(Map.of("0", 88.0, "1", 82.0, "2", 90.0));
+request.setGpa(3.75);
 ```
 
-## Conclusion
+---
 
-By following these steps, you can integrate the pre-trained ML models into a Spring Boot application using Java libraries like `DJL` or `Tribuo`. This setup allows the Spring Boot application to leverage the power of the trained model while maintaining a clean separation between the ML pipeline and the application logic.
+### Summary
 
-For further improvements, consider:
-- Adding model versioning and monitoring.
-- Implementing caching for frequently requested predictions.
-- Enhancing the API with additional features like batch predictions.
+The Next-Step Recommendations microservice is designed to predict career probabilities based on a student's educational background. The key components include:
+
+- **`Predictor`**: Makes predictions using a pre-trained model.
+- **`Config`**: Contains static configurations and mappings.
+- **`Preprocessor`**: Preprocesses raw data for training and prediction.
+- **`Generator`**: Generates synthetic student profiles.
+- **`Trainer`**: Trains the machine learning model.
+- **`RecommendationController`**: Exposes REST endpoints for predictions, training, and data generation.
+- **`PredictionRequest`**: Encapsulates the input data for predictions.
+
+This documentation should help other developers understand the structure and functionality of the microservice, enabling them to extend or modify it as needed.
