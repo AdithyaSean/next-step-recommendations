@@ -45,7 +45,7 @@ AI-powered recommendation service for the Next Step platform. Analyzes student d
    ```
 
 ## API Documentation
-See [docs/api.md](docs/api.md) for detailed API documentation.
+See [docs/api.md](docs/recommendation-microservice-api) for detailed API documentation.
 
 ## ML Model Documentation
 See [docs/ml-models.md](docs/ml-models.md) for information about the ML models.
