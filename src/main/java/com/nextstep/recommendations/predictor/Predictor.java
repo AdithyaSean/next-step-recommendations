@@ -1,17 +1,18 @@
 package com.nextstep.recommendations.predictor;
 
 import com.nextstep.recommendations.config.Config;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 @Service
 public class Predictor {
@@ -59,39 +60,5 @@ public class Predictor {
         }
 
         return careerProbabilities;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Predictor predictor = new Predictor(Config.MODEL_DIR + "/career_predictor.model");
-
-        Map<String, Double> olResults = Map.of(
-            "0", 85.0,
-            "1", 78.0,
-            "2", 72.0,
-            "3", 65.0,
-            "4", 70.0,
-            "5", 75.0
-        );
-
-        System.out.println("\nOL Student Profile:");
-        System.out.println("==================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(0, olResults, null, null, null));
-
-        Map<String, Double> alResults = Map.of(
-            "0", 88.0,
-            "1", 82.0,
-            "2", 90.0
-        );
-
-        System.out.println("\nAL Science Student Profile:");
-        System.out.println("=========================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(1, olResults, 0, alResults, null));
-
-        System.out.println("\nUniversity Student Profile:");
-        System.out.println("=========================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(2, olResults, 0, alResults, 3.75));
     }
 }

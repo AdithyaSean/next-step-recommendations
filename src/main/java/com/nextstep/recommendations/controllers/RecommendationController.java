@@ -4,8 +4,9 @@ import com.nextstep.recommendations.generator.Generator;
 import com.nextstep.recommendations.model.PredictionRequest;
 import com.nextstep.recommendations.predictor.Predictor;
 import com.nextstep.recommendations.trainer.Trainer;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @RestController
@@ -13,10 +14,12 @@ import java.util.Map;
 public class RecommendationController {
 
     private final Predictor predictor;
+    private final Trainer trainer;
 
     @Autowired
-    public RecommendationController(Predictor predictor) {
+    public RecommendationController(Predictor predictor, Trainer trainer) {
         this.predictor = predictor;
+        this.trainer = trainer;
     }
 
     @PostMapping("/predict")
@@ -32,7 +35,6 @@ public class RecommendationController {
 
     @PostMapping("/train")
     public String train() throws Exception {
-        Trainer trainer = new Trainer();
         trainer.train();
         return "Model trained successfully!";
     }
@@ -41,6 +43,6 @@ public class RecommendationController {
     public String generate() {
         Generator generator = new Generator();
         generator.generate();
-        return "Model trained successfully!";
+        return "Data generated successfully!";
     }
 }

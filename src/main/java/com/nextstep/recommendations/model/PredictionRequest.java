@@ -1,9 +1,11 @@
 package com.nextstep.recommendations.model;
 
+import lombok.Setter;
+
 import java.util.Map;
 
+@Setter
 public class PredictionRequest {
-
     private int educationLevel;
     private Map<String, Double> olResults;
     private Integer alStream;
@@ -29,4 +31,5 @@ public class PredictionRequest {
     public Double getGpa() {
         return gpa;
     }
+
 }

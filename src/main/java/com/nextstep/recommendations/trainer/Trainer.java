@@ -1,17 +1,21 @@
 package com.nextstep.recommendations.trainer;
 
 import com.nextstep.recommendations.config.Config;
-import weka.classifiers.trees.RandomForest;
+
+import weka.classifiers.Evaluation;
 import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
-import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.SerializationHelper;
-import weka.classifiers.evaluation.Evaluation;
+import weka.core.converters.ConverterUtils.DataSource;
+
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+@Service
 public class Trainer {
 
     public void train() throws Exception {
@@ -46,10 +50,5 @@ public class Trainer {
         if (data.classAttribute().isNominal() && data.numClasses() > 1) {
             System.out.println(eval.toClassDetailsString());
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        Trainer trainer = new Trainer();
-        trainer.train();
     }
 }
