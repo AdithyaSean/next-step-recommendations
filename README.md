@@ -12,10 +12,7 @@ AI-powered recommendation service for the Next Step platform. Analyzes student d
 
 ## Tech Stack
 - Spring Boot
-- Python ML Services
 - PostgreSQL
-- Apache Kafka (for event streaming)
-- TensorFlow/PyTorch
 
 ## ML Components
 - Career path prediction models
@@ -26,12 +23,10 @@ AI-powered recommendation service for the Next Step platform. Analyzes student d
 ## Setup
 1. Configure environment variables:
    ```env
-   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/recommendations_db
-   SPRING_DATASOURCE_USERNAME=myuser
+   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/next-step-recommendations_db
+   SPRING_DATASOURCE_USERNAME=next-step-recommendations
    SPRING_DATASOURCE_PASSWORD=secret
-   GATEWAY_URL=http://localhost:8080
-   EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-   ML_SERVICE_URL=http://localhost:5000
+   GATEWAY_URL=http://localhost:8082
    ```
 
 2. Start dependencies:
