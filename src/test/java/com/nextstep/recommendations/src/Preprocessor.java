@@ -1,4 +1,4 @@
-package com.nextstep.recommendations.preprocessor;
+package com.nextstep.recommendations.src;
 
 import com.nextstep.recommendations.config.Config;
 import weka.core.Instances;

@@ -1,4 +1,4 @@
-package com.nextstep.recommendations.predictor;
+package com.nextstep.recommendations.src;
 
 import com.nextstep.recommendations.config.Config;
 

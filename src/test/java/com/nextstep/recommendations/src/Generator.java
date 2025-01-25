@@ -1,9 +1,6 @@
-package com.nextstep.recommendations.generator;
+package com.nextstep.recommendations.src;
 
 import com.nextstep.recommendations.config.Config;
-import com.nextstep.recommendations.predictor.Predictor;
-import com.nextstep.recommendations.preprocessor.Preprocessor;
-import com.nextstep.recommendations.trainer.Trainer;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -26,9 +23,9 @@ public class Generator {
             int eduType = random.nextInt(Config.EDUCATION_LEVELS.size());
             profile.put("education_level", eduType);
 
-                for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
-                    profile.put("OL_subject_" + entry.getValue() + "_score", random.nextInt(100));
-                }
+            for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
+                profile.put("OL_subject_" + entry.getValue() + "_score", random.nextInt(100));
+            }
 
             if (eduType == Config.EDUCATION_LEVELS.get("AL") || eduType == Config.EDUCATION_LEVELS.get("UNI")) {
                 int streamId = random.nextInt(Config.AL_STREAMS.size());
@@ -37,14 +34,14 @@ public class Generator {
                 List<Integer> subjects = Config.AL_SUBJECTS_BY_STREAM.get(streamId);
                 if (subjects != null) {
                     for (int subjectId : subjects) {
-                    profile.put("AL_subject_" + subjectId + "_score", random.nextInt(100));
+                        profile.put("AL_subject_" + subjectId + "_score", random.nextInt(100));
+                    }
                 }
-            }
             } else {
                 profile.put("AL_stream", -1);
-        for (Map.Entry<String, Integer> entry : Config.AL_SUBJECTS.entrySet()) {
+                for (Map.Entry<String, Integer> entry : Config.AL_SUBJECTS.entrySet()) {
                     profile.put("AL_subject_" + entry.getValue() + "_score", -1);
-        }
+                }
             }
 
             if (eduType == Config.EDUCATION_LEVELS.get("UNI")) {
@@ -52,17 +49,17 @@ public class Generator {
                 double gpa = random.nextGaussian() * 0.4 + 3.2;
                 gpa = Math.max(Config.GPA_RANGE[0], Math.min(Config.GPA_RANGE[1], gpa));
                 profile.put("gpa", Math.round(gpa * 100.0) / 100.0);
-                } else {
+            } else {
                 profile.put("university_score", -1);
                 profile.put("gpa", -1.0);
-                }
+            }
 
             List<Integer> possibleCareers = Config.CAREERS_BY_EDUCATION_LEVEL.get(eduType);
             int careerIndex = possibleCareers.get(random.nextInt(possibleCareers.size()));
             profile.put("career", careerIndex);
 
             data.add(profile);
-            }
+        }
 
         return data;
     }
@@ -126,49 +123,5 @@ public class Generator {
             }
         }
         DataSink.write(Config.DATA_DIR + "/student_profiles.arff", dataset);
-    }
-
-    public static void main(String[] args) throws Exception {
-        Generator generator = new Generator();
-        List<Map<String, Object>> data = generator.generate();
-        generator.saveToARFF(data);
-
-        Preprocessor preprocessor = new Preprocessor();
-        preprocessor.preprocess();
-
-        Trainer trainer = new Trainer();
-        trainer.train();
-
-        Predictor predictor = new Predictor(Config.MODEL_DIR + "/career_predictor.model");
-
-        Map<String, Double> olResults = Map.of(
-                "0", 85.0,
-                "1", 78.0,
-                "2", 72.0,
-                "3", 65.0,
-                "4", 70.0,
-                "5", 75.0
-        );
-
-        System.out.println("\nOL Student Profile:");
-        System.out.println("==================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(0, olResults, null, null, null));
-
-        Map<String, Double> alResults = Map.of(
-                "0", 88.0,
-                "1", 82.0,
-                "2", 90.0
-        );
-
-        System.out.println("\nAL Science Student Profile:");
-        System.out.println("=========================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(1, olResults, 0, alResults, null));
-
-        System.out.println("\nUniversity Student Profile:");
-        System.out.println("=========================");
-        System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(2, olResults, 0, alResults, 3.75));
     }
 }
