@@ -1,4 +1,4 @@
-package com.nextstep.recommendations.trainer;
+package com.nextstep.recommendations.src;
 
 import com.nextstep.recommendations.config.Config;
 
