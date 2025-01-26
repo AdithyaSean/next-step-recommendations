@@ -1,18 +1,12 @@
 package com.nextstep.recommendations.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Entity
 @Table(name = "student_profiles")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class StudentProfile {
     @Id
     @Column(name = "profile_id")
@@ -60,5 +54,25 @@ public class StudentProfile {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = java.time.LocalDateTime.now();
+    }
+
+    public Map<String, Double> getOlResults() {
+        return olResults;
+    }
+
+    public Map<String, Double> getAlResults() {
+        return alResults;
+    }
+
+    public Integer getAlStream() {
+        return alStream;
+    }
+
+    public void setCareerProbabilities(Map<String, Double> careerProbabilities) {
+        this.careerProbabilities = careerProbabilities;
+    }
+
+    public Double getGpa() {
+        return gpa;
     }
 }
