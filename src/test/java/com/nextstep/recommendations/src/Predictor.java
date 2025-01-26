@@ -2,9 +2,7 @@ package com.nextstep.recommendations.src;
 
 import com.nextstep.recommendations.config.Config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -14,12 +12,10 @@ import weka.core.DenseInstance;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 public class Predictor {
 
     private final Classifier model;
 
-    @Autowired
     public Predictor(@Value("${model.path}") String modelPath) throws Exception {
         this.model = (Classifier) weka.core.SerializationHelper.read(modelPath);
     }
