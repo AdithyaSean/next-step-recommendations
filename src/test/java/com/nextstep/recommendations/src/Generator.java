@@ -11,19 +11,22 @@ import java.util.*;
 
 public class Generator {
 
-    public List<Map<String, Object>> generate() {
-        List<Map<String, Object>> data = new ArrayList<>();
+    public Map<String, List<Map<String, Object>>> generate() {
+        Map<String, List<Map<String, Object>>> data = new HashMap<>();
+        data.put("OL", new ArrayList<>());
+        data.put("AL", new ArrayList<>());
+        data.put("UNI", new ArrayList<>());
         Random random = new Random();
 
         for (int i = 0; i < Config.NUM_STUDENTS; i++) {
             Map<String, Object> profile = new HashMap<>();
             profile.put("profile_id", i + 1);
 
-            int eduType = random.nextInt(Config.EDUCATION_LEVELS.size());
+            int eduType = getRandomEducationLevel(random);
             profile.put("education_level", eduType);
 
             for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
-                profile.put("OL_subject_" + entry.getValue() + "_score", random.nextInt(100));
+                profile.put("OL_subject_" + entry.getValue() + "_score", random.nextInt(5) + 1);
             }
 
             if (eduType == Config.EDUCATION_LEVELS.get("AL") || eduType == Config.EDUCATION_LEVELS.get("UNI")) {
@@ -33,7 +36,7 @@ public class Generator {
                 List<Integer> subjects = Config.AL_SUBJECTS_BY_STREAM.get(streamId);
                 if (subjects != null) {
                     for (int subjectId : subjects) {
-                        profile.put("AL_subject_" + subjectId + "_score", random.nextInt(100));
+                        profile.put("AL_subject_" + subjectId + "_score", random.nextInt(5) + 1);
                     }
                 }
             } else {
@@ -57,13 +60,37 @@ public class Generator {
             int careerIndex = possibleCareers.get(random.nextInt(possibleCareers.size()));
             profile.put("career", careerIndex);
 
-            data.add(profile);
+            if (eduType == Config.EDUCATION_LEVELS.get("OL")) {
+                data.get("OL").add(profile);
+            } else if (eduType == Config.EDUCATION_LEVELS.get("AL")) {
+                data.get("AL").add(profile);
+            } else {
+                data.get("UNI").add(profile);
+            }
         }
 
         return data;
     }
 
-    public void saveToARFF(List<Map<String, Object>> data) throws Exception {
+    private int getRandomEducationLevel(Random random) {
+        double rand = random.nextDouble();
+        double cumulativeProbability = 0.0;
+        for (Map.Entry<Integer, Double> entry : Config.EDUCATION_LEVEL_DIST.entrySet()) {
+            cumulativeProbability += entry.getValue();
+            if (rand <= cumulativeProbability) {
+                return entry.getKey();
+            }
+        }
+        return Config.EDUCATION_LEVELS.get("OL");
+    }
+
+    public void saveToARFF(Map<String, List<Map<String, Object>>> data) throws Exception {
+        saveDatasetToARFF(data.get("OL"), "OL_student_profiles.arff");
+        saveDatasetToARFF(data.get("AL"), "AL_student_profiles.arff");
+        saveDatasetToARFF(data.get("UNI"), "UNI_student_profiles.arff");
+    }
+
+    private void saveDatasetToARFF(List<Map<String, Object>> data, String fileName) throws Exception {
         ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("profile_id"));
         attributes.add(new Attribute("education_level"));
@@ -109,7 +136,11 @@ public class Generator {
             Double gpa = (Double) profile.get("gpa");
             instance.setValue(attributes.get(index++), Objects.requireNonNullElse(gpa, 0.0));
 
-            String career = Config.CAREERS.keySet().toArray()[(int) profile.get("career")].toString();
+            String career = Config.CAREERS.entrySet().stream()
+                    .filter(entry -> entry.getValue().equals(profile.get("career")))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse("Unknown");
             instance.setValue(attributes.get(index), career);
 
             dataset.add(instance);
@@ -121,6 +152,6 @@ public class Generator {
                 throw new IOException("Failed to create directory: " + Config.MODEL_DIR);
             }
         }
-        DataSink.write(Config.MODEL_DIR + "/student_profiles.arff", dataset);
+        DataSink.write(Config.MODEL_DIR + "/" + fileName, dataset);
     }
 }

@@ -1,47 +1,58 @@
 package com.nextstep.recommendations.src;
 
-import weka.classifiers.Evaluation;
-import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.meta.CostSensitiveClassifier;
+import weka.classifiers.CostMatrix;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.classifiers.Evaluation;
 
-import org.springframework.stereotype.Service;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.io.File;
 
-@Service
 public class Trainer {
 
     public void train() throws Exception {
-        DataSource source = new DataSource(Config.MODEL_DIR + "/features.arff");
+        trainModel("OL_student_profiles.arff", "OL_career_predictor.model");
+        trainModel("AL_student_profiles.arff", "AL_career_predictor.model");
+        trainModel("UNI_student_profiles.arff", "UNI_career_predictor.model");
+    }
+
+    private void trainModel(String arffFile, String modelFile) throws Exception {
+        DataSource source = new DataSource(Config.MODEL_DIR + "/" + arffFile);
         Instances data = source.getDataSet();
-        data.setClassIndex(data.numAttributes() - 1); // Set career as the class attribute
+        data.setClassIndex(data.numAttributes() - 1);
 
         RandomForest forest = new RandomForest();
-        CVParameterSelection gridSearch = new CVParameterSelection();
-        gridSearch.setClassifier(forest);
-        gridSearch.setNumFolds(5);
-        gridSearch.setSeed(new Random().nextInt());
+        forest.setNumIterations(100);
 
-        gridSearch.addCVParameter("P 100 100 1");
-        gridSearch.addCVParameter("M 1.0 1.0 1");
-        gridSearch.addCVParameter("K 0 0 1");
+        CostMatrix costMatrix = new CostMatrix(data.numClasses());
+        for (int i = 0; i < data.numClasses(); i++) {
+            for (int j = 0; j < data.numClasses(); j++) {
+                if (i != j) {
+                    costMatrix.setElement(i, j, 1.0);
+                }
+            }
+        }
 
-        gridSearch.buildClassifier(data);
+        CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier();
+        costSensitiveClassifier.setClassifier(forest);
+        costSensitiveClassifier.setCostMatrix(costMatrix);
+        costSensitiveClassifier.setMinimizeExpectedCost(true);
+
+        costSensitiveClassifier.buildClassifier(data);
 
         File modelDir = new File(Config.MODEL_DIR);
         if (!modelDir.exists() && !modelDir.mkdirs()) {
             throw new IOException("Failed to create directory: " + Config.MODEL_DIR);
         }
 
-        SerializationHelper.write(Config.MODEL_DIR + "/career_predictor.model", gridSearch);
+        SerializationHelper.write(Config.MODEL_DIR + "/" + modelFile, costSensitiveClassifier);
 
         Evaluation eval = new Evaluation(data);
-        eval.crossValidateModel(gridSearch, data, 5, new Random(1));
+        eval.crossValidateModel(costSensitiveClassifier, data, 5, new Random(1));
         System.out.println(eval.toSummaryString());
         System.out.println(eval.toMatrixString());
 
