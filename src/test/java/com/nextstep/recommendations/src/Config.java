@@ -1,4 +1,4 @@
-package com.nextstep.recommendations.config;
+package com.nextstep.recommendations.src;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +78,5 @@ public class Config {
 
     public static final double[] GPA_RANGE = {2.0, 4.0};
     public static final int NUM_STUDENTS = 5000;
-    public static final String DATA_DIR = "./data";
     public static final String MODEL_DIR = "./models";
 }

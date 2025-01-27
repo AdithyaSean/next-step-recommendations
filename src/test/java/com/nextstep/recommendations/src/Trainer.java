@@ -1,7 +1,5 @@
 package com.nextstep.recommendations.src;
 
-import com.nextstep.recommendations.config.Config;
-
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.CVParameterSelection;
 import weka.classifiers.trees.RandomForest;

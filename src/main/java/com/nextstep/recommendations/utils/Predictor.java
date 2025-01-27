@@ -1,6 +1,5 @@
 package com.nextstep.recommendations.utils;
 
-import com.nextstep.recommendations.config.Config;
 import com.nextstep.recommendations.model.StudentProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,10 +19,9 @@ public class Predictor {
     private final Instances dataset;
 
     @Autowired
-    public Predictor(@Value("${model.path}") String modelPath) throws Exception {
-        this.model = (Classifier) SerializationHelper.read(modelPath);
-        // Load the dataset structure from the ARFF file used during training
-        this.dataset = DataSource.read(Config.MODEL_DIR + "/features.arff");
+    public Predictor(@Value("${model.dir}") String modelDir) throws Exception {
+        this.model = (Classifier) SerializationHelper.read(modelDir + "career_prediction.model");
+        this.dataset = DataSource.read(modelDir + "features.arff");
         this.dataset.setClassIndex(this.dataset.numAttributes() - 1);
     }
 

@@ -1,7 +1,5 @@
 package com.nextstep.recommendations.src;
 
-import com.nextstep.recommendations.config.Config;
-
 import org.springframework.beans.factory.annotation.Value;
 
 import weka.core.Instances;
@@ -12,11 +10,11 @@ import weka.core.DenseInstance;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Predictor {
+public class TestPredictor {
 
     private final Classifier model;
 
-    public Predictor(@Value("${model.path}") String modelPath) throws Exception {
+    public TestPredictor(@Value("${model.path}") String modelPath) throws Exception {
         this.model = (Classifier) weka.core.SerializationHelper.read(modelPath);
     }
 

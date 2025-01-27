@@ -1,6 +1,5 @@
 package com.nextstep.recommendations.src;
 
-import com.nextstep.recommendations.config.Config;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
@@ -16,7 +15,7 @@ import java.util.Map;
 public class Preprocessor {
 
     public void preprocess() throws Exception {
-        DataSource source = new DataSource(Config.DATA_DIR + "/student_profiles.arff");
+        DataSource source = new DataSource(Config.MODEL_DIR + "/student_profiles.arff");
         Instances data = source.getDataSet();
 
         data.setClassIndex(data.numAttributes() - 1);

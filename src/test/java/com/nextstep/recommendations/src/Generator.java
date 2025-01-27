@@ -1,6 +1,5 @@
 package com.nextstep.recommendations.src;
 
-import com.nextstep.recommendations.config.Config;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -116,12 +115,12 @@ public class Generator {
             dataset.add(instance);
         }
 
-        File dataDir = new File(Config.DATA_DIR);
+        File dataDir = new File(Config.MODEL_DIR);
         if (!dataDir.exists()) {
             if (!dataDir.mkdirs()) {
-                throw new IOException("Failed to create directory: " + Config.DATA_DIR);
+                throw new IOException("Failed to create directory: " + Config.MODEL_DIR);
             }
         }
-        DataSink.write(Config.DATA_DIR + "/student_profiles.arff", dataset);
+        DataSink.write(Config.MODEL_DIR + "/student_profiles.arff", dataset);
     }
 }

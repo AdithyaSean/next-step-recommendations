@@ -1,7 +1,5 @@
 package com.nextstep.recommendations.src;
 
-import com.nextstep.recommendations.config.Config;
-
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +15,7 @@ class Test {
         Trainer trainer = new Trainer();
         trainer.train();
 
-        Predictor predictor = new Predictor(Config.MODEL_DIR + "/career_predictor.model");
+        TestPredictor testPredictor = new TestPredictor(Config.MODEL_DIR + "/career_predictor.model");
 
         Map<String, Double> olResults = Map.of(
                 "0", 85.0,
@@ -31,7 +29,7 @@ class Test {
         System.out.println("\nOL Student Profile:");
         System.out.println("==================");
         System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(0, olResults, null, null, null));
+        System.out.println(testPredictor.predict(0, olResults, null, null, null));
 
         Map<String, Double> alResults = Map.of(
                 "0", 88.0,
@@ -42,11 +40,11 @@ class Test {
         System.out.println("\nAL Science Student Profile:");
         System.out.println("=========================");
         System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(1, olResults, 0, alResults, null));
+        System.out.println(testPredictor.predict(1, olResults, 0, alResults, null));
 
         System.out.println("\nUniversity Student Profile:");
         System.out.println("=========================");
         System.out.println("\nPredicted Career Probabilities:");
-        System.out.println(predictor.predict(2, olResults, 0, alResults, 3.75));
+        System.out.println(testPredictor.predict(2, olResults, 0, alResults, 3.75));
     }
 }
