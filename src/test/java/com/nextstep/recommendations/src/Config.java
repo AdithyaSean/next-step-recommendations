@@ -105,6 +105,15 @@ public class Config {
         ));
     }
 
+    // AL Stream Mapping
+    public static final Map<Integer, String> STREAM_NAMES = new HashMap<>();
+    static {
+        STREAM_NAMES.put(AL_STREAMS.get("Physical Science"), "physical_science");
+        STREAM_NAMES.put(AL_STREAMS.get("Biological Science"), "biological_science");
+        STREAM_NAMES.put(AL_STREAMS.get("Physical Science with ICT"), "physical_science_ict");
+        STREAM_NAMES.put(AL_STREAMS.get("Bio Science with Agriculture"), "bio_science_agriculture");
+    }
+
     // Subject difficulty levels (adjusted weights)
     public static final Map<Integer, Double> SUBJECT_DIFFICULTY = new HashMap<>();
     static {
