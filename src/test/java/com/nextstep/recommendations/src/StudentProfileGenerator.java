@@ -20,7 +20,7 @@ public class StudentProfileGenerator {
         for (int i = 0; i < numberOfStudents; i++) {
             StudentProfile profile = generateStudentProfile();
             repository.save(profile);
-            repository.findById(profile.getId(i)).orElseThrow(() -> new RuntimeException("Profile not found"));
+            repository.findById(profile.getId()).orElseThrow(() -> new RuntimeException("Profile not found"));
         }
     }
 
