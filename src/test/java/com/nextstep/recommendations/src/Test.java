@@ -6,10 +6,15 @@ import java.util.Map;
 class Test {
     public static void main(String[] args) throws Exception {
         Generator generator = new Generator();
-        List<Map<String, Object>> datasets = generator.generateDatasets();
 
-        Trainer trainer = new Trainer();
-        trainer.train(datasets);
+        // Generate datasets
+        generator.generateOLDataset();
+        generator.generateALDataset();
+        generator.generateUNIDataset();
+
+        // Get generated datasets
+
+        // Train models
 
         // Common OL results for all students
         Map<Integer, Integer> olResults = Map.of(

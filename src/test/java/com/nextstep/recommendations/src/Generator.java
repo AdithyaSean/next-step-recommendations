@@ -26,7 +26,7 @@ public class Generator {
             String line = Config.OL_SUBJECTS.values().stream()
                     .map(subjId -> Config.GRADES.entrySet().stream()
                             .filter(e -> e.getValue().equals(olGrades.get(subjId)))
-                            .findFirst().get().getKey())
+                            .findFirst().map(Map.Entry::getKey).orElse("NA"))
                     .collect(Collectors.joining(","));
 
             line += String.format(",%.4f,%.4f,%.4f,%.4f,%.4f,%.4f",
@@ -56,7 +56,7 @@ public class Generator {
             String line = olGrades.values().stream()
                     .map(grade -> Config.GRADES.entrySet().stream()
                             .filter(e -> e.getValue().equals(grade))
-                            .findFirst().get().getKey())
+                            .findFirst().map(Map.Entry::getKey).orElse("NA"))
                     .collect(Collectors.joining(","));
 
             line += String.format(",%.2f,", zScore);
@@ -65,14 +65,14 @@ public class Generator {
                     .map(subjId -> alGrades.containsKey(subjId) ?
                             Config.GRADES.entrySet().stream()
                                     .filter(e -> e.getValue().equals(alGrades.get(subjId)))
-                                    .findFirst().get().getKey() : "NA")
+                                    .findFirst().map(Map.Entry::getKey).orElse("NA") : "NA")
                     .collect(Collectors.joining(","));
 
-            Map<String, Double> probs = calculateALProbabilities(olGrades, alGrades, zScore);
+            Map<String, Double> probabilities = calculateALProbabilities(olGrades, alGrades, zScore);
             line += String.format(",%.4f,%.4f,%.4f,%.4f,%.4f,%.4f",
-                    probs.get("Engineering"), probs.get("Medicine"),
-                    probs.get("IT"), probs.get("Business"),
-                    probs.get("Teaching"), probs.get("Research"));
+                    probabilities.get("Engineering"), probabilities.get("Medicine"),
+                    probabilities.get("IT"), probabilities.get("Business"),
+                    probabilities.get("Teaching"), probabilities.get("Research"));
 
             lines.add(line);
         }
@@ -94,11 +94,11 @@ public class Generator {
 
             String line = String.format("%.2f,%.2f,%d,", gpa, zScore, streamId);
 
-            Map<String, Double> probs = calculateUNIProbabilities(streamId, zScore, gpa);
+            Map<String, Double> probabilities = calculateUNIProbabilities(streamId, zScore, gpa);
             line += String.format("%.4f,%.4f,%.4f,%.4f,%.4f,%.4f",
-                    probs.get("Engineering"), probs.get("Medicine"),
-                    probs.get("IT"), probs.get("Business"),
-                    probs.get("Teaching"), probs.get("Research"));
+                    probabilities.get("Engineering"), probabilities.get("Medicine"),
+                    probabilities.get("IT"), probabilities.get("Business"),
+                    probabilities.get("Teaching"), probabilities.get("Research"));
 
             lines.add(line);
         }
@@ -188,13 +188,13 @@ public class Generator {
     }
 
     private Map<String, Double> calculateOLProbabilities(Map<Integer, Integer> olGrades) {
-        Map<String, Double> probs = new HashMap<>();
+        Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
             double bonus = calculateOLCareerBonus(career, olGrades);
-            probs.put(career, base + bonus);
+            probabilities.put(career, base + bonus);
         }
-        return normalizeProbs(probs);
+        return normalizeProbabilities(probabilities);
     }
 
     private double calculateOLCareerBonus(String career, Map<Integer, Integer> olGrades) {
@@ -211,15 +211,15 @@ public class Generator {
     }
 
     private Map<String, Double> calculateALProbabilities(Map<Integer, Integer> olGrades, Map<Integer, Integer> alGrades, double zScore) {
-        Map<String, Double> probs = new HashMap<>();
+        Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
             double olBonus = calculateOLCareerBonus(career, olGrades);
             double alBonus = calculateALCareerBonus(career, alGrades);
             double zScoreBonus = calculateZScoreBonus(career, zScore);
-            probs.put(career, base + olBonus + alBonus + zScoreBonus);
+            probabilities.put(career, base + olBonus + alBonus + zScoreBonus);
         }
-        return normalizeProbs(probs);
+        return normalizeProbabilities(probabilities);
     }
 
     private double calculateALCareerBonus(String career, Map<Integer, Integer> alGrades) {
@@ -242,15 +242,15 @@ public class Generator {
     }
 
     private Map<String, Double> calculateUNIProbabilities(int streamId, double zScore, double gpa) {
-        Map<String, Double> probs = new HashMap<>();
+        Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
             double zScoreBonus = calculateZScoreBonus(career, zScore);
             double gpaBonus = calculateGPABonus(career, gpa);
             double streamBonus = calculateStreamBonus(career, streamId);
-            probs.put(career, base + zScoreBonus + gpaBonus + streamBonus);
+            probabilities.put(career, base + zScoreBonus + gpaBonus + streamBonus);
         }
-        return normalizeProbs(probs);
+        return normalizeProbabilities(probabilities);
     }
 
     private double calculateGPABonus(String career, double gpa) {
@@ -264,9 +264,9 @@ public class Generator {
         return careerBonus.getOrDefault(streamId, 0.0);
     }
 
-    private Map<String, Double> normalizeProbs(Map<String, Double> probs) {
-        double total = probs.values().stream().mapToDouble(Double::doubleValue).sum();
-        return probs.entrySet().stream()
+    private Map<String, Double> normalizeProbabilities(Map<String, Double> probabilities) {
+        double total = probabilities.values().stream().mapToDouble(Double::doubleValue).sum();
+        return probabilities.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         e -> e.getValue() / total
