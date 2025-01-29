@@ -9,11 +9,6 @@ public class Config {
     public static final int Z_SCORE_FACTOR = -1;
     public static final int GPA_FACTOR = -2;
 
-    // Number of students to generate
-    public static final int NUM_STUDENTS = 5000;
-    // Directory to save models
-    public static final String MODEL_DIR = "./models";
-
     // Education levels
     public static final Map<String, Integer> EDUCATION_LEVELS = new HashMap<>();
     static {
@@ -46,10 +41,10 @@ public class Config {
     // AL Streams (corrected to reflect common academic tracks)
     public static final Map<String, Integer> AL_STREAMS = new HashMap<>();
     static {
-        AL_STREAMS.put("Physical Science", 0);          // Core science track
-        AL_STREAMS.put("Biological Science", 1);        // Life sciences track
-        AL_STREAMS.put("Physical Science with ICT", 2); // Tech-oriented science
-        AL_STREAMS.put("Bio Science with Agriculture", 3); // Agricultural focus
+        AL_STREAMS.put("Physical Science", 6);          // Core science track
+        AL_STREAMS.put("Biological Science", 7);        // Life sciences track
+        AL_STREAMS.put("Physical Science with ICT", 8); // Tech-oriented science
+        AL_STREAMS.put("Bio Science with Agriculture", 9); // Agricultural focus
     }
 
     // AL Subjects (expanded with missing subjects, unique IDs)
@@ -208,7 +203,9 @@ public class Config {
                 OL_SUBJECTS.get("Maths"), 0.3,
                 OL_SUBJECTS.get("Science"), 0.2,
                 AL_SUBJECTS.get("Physics"), 0.8,
-                AL_SUBJECTS.get("Combined_Maths"), 0.9
+                AL_SUBJECTS.get("Combined_Maths"), 0.9,
+                AL_STREAMS.get("Physical Science"), 0.5,
+                AL_STREAMS.get("Physical Science with ICT"), 0.4
         ));
 
         // Medicine: Focus on biology/chemistry
@@ -218,7 +215,9 @@ public class Config {
                 OL_SUBJECTS.get("Science"), 0.4,
                 OL_SUBJECTS.get("English"), 0.3,
                 AL_SUBJECTS.get("Biology"), 0.9,
-                AL_SUBJECTS.get("Chemistry"), 0.8
+                AL_SUBJECTS.get("Chemistry"), 0.8,
+                AL_STREAMS.get("Biological Science"), 0.6,
+                AL_STREAMS.get("Bio Science with Agriculture"), 0.5
         ));
 
         // IT: ICT and math skills
@@ -227,7 +226,9 @@ public class Config {
                 GPA_FACTOR, 0.10,
                 OL_SUBJECTS.get("Maths"), 0.4,
                 AL_SUBJECTS.get("ICT"), 0.9,
-                AL_SUBJECTS.get("Combined_Maths"), 0.7
+                AL_SUBJECTS.get("Combined_Maths"), 0.7,
+                AL_STREAMS.get("Physical Science with ICT"), 0.8,
+                AL_STREAMS.get("Physical Science"), 0.6
         ));
 
         // Business: Economics and communication
@@ -237,7 +238,9 @@ public class Config {
                 OL_SUBJECTS.get("Maths"), 0.6,
                 OL_SUBJECTS.get("English"), 0.5,
                 AL_SUBJECTS.get("Economics"), 0.8,
-                AL_SUBJECTS.get("Business_Studies"), 0.9
+                AL_SUBJECTS.get("Business_Studies"), 0.9,
+                AL_STREAMS.get("Physical Science"), 0.4,
+                AL_STREAMS.get("Physical Science with ICT"), 0.3
         ));
 
         // Teaching: Subject mastery + communication
@@ -247,7 +250,9 @@ public class Config {
                 OL_SUBJECTS.get("English"), 0.7,
                 OL_SUBJECTS.get("Sinhala"), 0.6,
                 AL_SUBJECTS.get("Biology"), 0.7,
-                AL_SUBJECTS.get("Chemistry"), 0.6
+                AL_SUBJECTS.get("Chemistry"), 0.6,
+                AL_STREAMS.get("Biological Science"), 0.5,
+                AL_STREAMS.get("Bio Science with Agriculture"), 0.4
         ));
 
         // Research: High academic performance
@@ -257,7 +262,11 @@ public class Config {
                 OL_SUBJECTS.get("Science"), 0.8,
                 OL_SUBJECTS.get("Maths"), 0.7,
                 AL_SUBJECTS.get("Physics"), 0.9,
-                AL_SUBJECTS.get("Chemistry"), 0.8
+                AL_SUBJECTS.get("Chemistry"), 0.8,
+                AL_STREAMS.get("Physical Science"), 0.6,
+                AL_STREAMS.get("Physical Science with ICT"), 0.5,
+                AL_STREAMS.get("Biological Science"), 0.4,
+                AL_STREAMS.get("Bio Science with Agriculture"), 0.3
         ));
     }
 }

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.Map;
 
-@Entity
+@Entity(name = "StudentProfileTest")
 @Table(name = "generated_student_profiles")
 public class StudentProfile {
     @Id
@@ -15,7 +15,7 @@ public class StudentProfile {
     private int educationLevel;
 
     @ElementCollection
-    @CollectionTable(name = "ol_results", joinColumns = @JoinColumn(name = "profile_id"))
+    @CollectionTable(name = "generated_ol_results", joinColumns = @JoinColumn(name = "profile_id"))
     @MapKeyColumn(name = "subject")
     @Column(name = "grade")
     private Map<String, Double> olResults;
@@ -24,7 +24,7 @@ public class StudentProfile {
     private Integer alStream;
 
     @ElementCollection
-    @CollectionTable(name = "al_results", joinColumns = @JoinColumn(name = "profile_id"))
+    @CollectionTable(name = "generated_al_results", joinColumns = @JoinColumn(name = "profile_id"))
     @MapKeyColumn(name = "subject")
     @Column(name = "grade")
     private Map<String, Double> alResults;
@@ -32,31 +32,20 @@ public class StudentProfile {
     @Column(name = "z_score")
     private Double zScore;
 
+    @Column(name = "gpa")
+    private Double gpa;
+
     @ElementCollection
-    @CollectionTable(name = "career_probabilities", joinColumns = @JoinColumn(name = "profile_id"))
+    @CollectionTable(name = "generated_career_probabilities", joinColumns = @JoinColumn(name = "profile_id"))
     @MapKeyColumn(name = "career")
     @Column(name = "probability")
     private Map<String, Double> careerProbabilities;
-
-    @Column(name = "gpa")
-    private Double gpa;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private java.time.LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = java.time.LocalDateTime.now();
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = java.time.LocalDateTime.now();
-    }
 
     public StudentProfile() {
     }
@@ -86,59 +75,34 @@ public class StudentProfile {
         this.careerProbabilities = null;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getEducationLevel() {
-        return educationLevel;
-    }
-
-    public void setEducationLevel(int educationLevel) {
+    public StudentProfile(int educationLevel, Map<String, Double> olResults, Integer alStream, Map<String, Double> alResults, double zScore, Double gpa, Map<String, Double> careerProbabilities, java.time.LocalDateTime createdAt, java.time.LocalDateTime updatedAt) {
         this.educationLevel = educationLevel;
-    }
-
-    public Map<String, Double> getOlResults() {
-        return olResults;
-    }
-
-    public void setOlResults(Map<String, Double> olResults) {
         this.olResults = olResults;
-    }
-
-    public Integer getAlStream() {
-        return alStream;
-    }
-
-    public void setAlStream(Integer alStream) {
         this.alStream = alStream;
-    }
-
-    public Map<String, Double> getAlResults() {
-        return alResults;
-    }
-
-    public void setAlResults(Map<String, Double> alResults) {
         this.alResults = alResults;
+        this.zScore = zScore;
+        this.gpa = gpa;
+        this.careerProbabilities = careerProbabilities;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    public Map<String, Double> getCareerProbabilities() {
-        return careerProbabilities;
+    public int getId() {
+        return this.id;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = java.time.LocalDateTime.now();
     }
 
     public void setCareerProbabilities(Map<String, Double> careerProbabilities) {
         this.careerProbabilities = careerProbabilities;
-    }
-
-    public Double getGpa() {
-        return gpa;
-    }
-
-    public void setGpa(Double gpa) {
-        this.gpa = gpa;
     }
 }
