@@ -1,13 +1,11 @@
 package com.nextstep.recommendations.src;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DatasetGenerator {
+public class StudentProfileGenerator {
     private static final Random random = new Random();
 
     // Updated CSV headers with OL subjects in all datasets
@@ -31,7 +29,7 @@ public class DatasetGenerator {
 
         for (int i = 0; i < Config.NUM_STUDENTS; i++) {
             Map<Integer, Integer> olGrades = generateOLGrades();
-            Map<String, Double> probabilities = calculateOLProbabilities(olGrades);
+            Map<String, Double> probabilities = calculateCareerCompatibilityProbabilitiesForOL(olGrades);
 
             String line = Config.OL_SUBJECTS.values().stream()
                     .map(subjId -> Config.GRADES.entrySet().stream()
@@ -99,7 +97,7 @@ public class DatasetGenerator {
                     .collect(Collectors.joining(","));
 
             // Add stream and probabilities
-            Map<String, Double> probabilities = calculateALProbabilities(olGrades, alGrades, zScore);
+            Map<String, Double> probabilities = calculateCareerCompatibilityProbabilitiesForAL(olGrades, alGrades, zScore);
             line += String.format(",%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f",
                     streamId,
                     probabilities.get("Engineering"), probabilities.get("Medicine"),
@@ -148,7 +146,7 @@ public class DatasetGenerator {
                     .collect(Collectors.joining(","));
 
             // Add stream, GPA and probabilities
-            Map<String, Double> probabilities = calculateUNIProbabilities(olGrades, alGrades, streamId, zScore, gpa);
+            Map<String, Double> probabilities = calculateCareerCompatibilityProbabilitiesForUNI(olGrades, alGrades, streamId, zScore, gpa);
             line += String.format(",%d,%.2f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f",
                     streamId, gpa,
                     probabilities.get("Engineering"), probabilities.get("Medicine"),
@@ -160,16 +158,6 @@ public class DatasetGenerator {
 
         Files.write(rawPath, lines);
         preprocessDataset(rawPath, processedPath);
-    }
-
-    private Map<Integer, Integer> generateOLGrades() {
-        Map<Integer, Integer> grades = new HashMap<>();
-        for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
-            int subjId = entry.getValue();
-            double difficulty = Config.SUBJECT_DIFFICULTY.get(subjId);
-            grades.put(subjId, generateGrade(difficulty));
-        }
-        return grades;
     }
 
     private int generateGrade(double difficulty) {
@@ -202,43 +190,6 @@ public class DatasetGenerator {
                         Map.Entry::getKey,
                         e -> e.getValue() / total
                 ));
-    }
-
-    private int selectStream() {
-        double rand = random.nextDouble();
-        if (rand < 0.4) return Config.AL_STREAMS.get("Physical Science");
-        if (rand < 0.7) return Config.AL_STREAMS.get("Biological Science");
-        if (rand < 0.85) return Config.AL_STREAMS.get("Physical Science with ICT");
-        return Config.AL_STREAMS.get("Bio Science with Agriculture");
-    }
-
-    private Map<Integer, Integer> generateALGrades(int streamId) {
-        Map<Integer, Integer> grades = new HashMap<>();
-        List<Integer> subjects = Config.AL_SUBJECTS_BY_STREAM.get(streamId);
-        for (int subjId : subjects) {
-            Map<String, Double> dist = Config.GRADE_DISTRIBUTIONS.get(subjId);
-            double rand = random.nextDouble();
-            double cumulative = 0.0;
-            for (Map.Entry<String, Double> entry : dist.entrySet()) {
-                cumulative += entry.getValue();
-                if (rand <= cumulative) {
-                    grades.put(subjId, Config.GRADES.get(entry.getKey()));
-                    break;
-                }
-            }
-        }
-        return grades;
-    }
-
-    private double generateZScore(int streamId) {
-        double[] range = Config.Z_SCORE_RANGE.get(streamId);
-        return range[0] + (range[1] - range[0]) * random.nextDouble();
-    }
-
-    private double generateGPA(double zScore) {
-        int tier = zScore > 3.0 ? 0 : zScore > 2.5 ? 1 : 2;
-        double[] range = Config.GPA_RANGE.get(tier);
-        return range[0] + (range[1] - range[0]) * random.nextDouble();
     }
 
     private double calculateOLCareerBonus(String career, Map<Integer, Integer> olGrades) {
@@ -293,7 +244,54 @@ public class DatasetGenerator {
                 ));
     }
 
-    private Map<String, Double> calculateOLProbabilities(Map<Integer, Integer> olGrades) {
+    private Map<Integer, Integer> generateOLGrades() {
+        Map<Integer, Integer> grades = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
+            int subjId = entry.getValue();
+            double difficulty = Config.SUBJECT_DIFFICULTY.get(subjId);
+            grades.put(subjId, generateGrade(difficulty));
+        }
+        return grades;
+    }
+
+    private Map<Integer, Integer> generateALGrades(int streamId) {
+        Map<Integer, Integer> grades = new HashMap<>();
+        List<Integer> subjects = Config.AL_SUBJECTS_BY_STREAM.get(streamId);
+        for (int subjId : subjects) {
+            Map<String, Double> dist = Config.GRADE_DISTRIBUTIONS.get(subjId);
+            double rand = random.nextDouble();
+            double cumulative = 0.0;
+            for (Map.Entry<String, Double> entry : dist.entrySet()) {
+                cumulative += entry.getValue();
+                if (rand <= cumulative) {
+                    grades.put(subjId, Config.GRADES.get(entry.getKey()));
+                    break;
+                }
+            }
+        }
+        return grades;
+    }
+
+    private int getALStream() {
+        double rand = random.nextDouble();
+        if (rand < 0.4) return Config.AL_STREAMS.get("Physical Science");
+        if (rand < 0.7) return Config.AL_STREAMS.get("Biological Science");
+        if (rand < 0.85) return Config.AL_STREAMS.get("Physical Science with ICT");
+        return Config.AL_STREAMS.get("Bio Science with Agriculture");
+    }
+
+    private double generateZScore(int streamId) {
+        double[] range = Config.Z_SCORE_RANGE.get(streamId);
+        return range[0] + (range[1] - range[0]) * random.nextDouble();
+    }
+
+    private double generateGPA(double zScore) {
+        int tier = zScore > 3.0 ? 0 : zScore > 2.5 ? 1 : 2;
+        double[] range = Config.GPA_RANGE.get(tier);
+        return range[0] + (range[1] - range[0]) * random.nextDouble();
+    }
+
+    private Map<String, Double> calculateCareerCompatibilityProbabilitiesForOL(Map<Integer, Integer> olGrades) {
         Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
@@ -303,7 +301,7 @@ public class DatasetGenerator {
         return normalizeProbabilities(probabilities);
     }
 
-    private Map<String, Double> calculateALProbabilities(Map<Integer, Integer> olGrades, Map<Integer, Integer> alGrades, double zScore) {
+    private Map<String, Double> calculateCareerCompatibilityProbabilitiesForAL(Map<Integer, Integer> olGrades, Map<Integer, Integer> alGrades, double zScore) {
         Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
@@ -315,11 +313,11 @@ public class DatasetGenerator {
         return normalizeProbabilities(probabilities);
     }
 
-    private Map<String, Double> calculateUNIProbabilities(Map<Integer, Integer> olGrades,
-                                                          Map<Integer, Integer> alGrades,
-                                                          int streamId,
-                                                          double zScore,
-                                                          double gpa) {
+    private Map<String, Double> calculateCareerCompatibilityProbabilitiesForUNI(Map<Integer, Integer> olGrades,
+                                                                                Map<Integer, Integer> alGrades,
+                                                                                int streamId,
+                                                                                double zScore,
+                                                                                double gpa) {
         Map<String, Double> probabilities = new HashMap<>();
         for (String career : Config.CAREERS.keySet()) {
             double base = Config.CAREER_COMPATIBILITY.get(Config.CAREERS.get(career));
@@ -362,212 +360,30 @@ public class DatasetGenerator {
         Files.write(outputPath, processedLines);
     }
 
-    private static void printOLPredictions(Map<Integer, Integer> olResults) {
-        CareerCompatibilityProbabilityPredictor olPrediction = new CareerCompatibilityProbabilityPredictor(olResults);
-        System.out.println("\nOL Student Profile:");
-        System.out.println("===================");
-        olPrediction.printPredictions(olPrediction.predictOL());
-    }
+    public void generateStudentProfiles() {
+            StudentProfile studentProfile = new StudentProfile(Config.EDUCATION_LEVELS.get("OL"), generateOLGrades());
+            for (Integer careerId : Config.CAREERS.values()) {
+                // TODO: Implement this
+            }
 
-    private static void printALPredictions(Map<Integer, Integer> olResults, Map<Integer, Integer> alResults) {
-        // Physical Science Stream
-        Map<Integer, Integer> physicalScienceResults = Map.of(
-                Config.AL_SUBJECTS.get("Physics"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Chemistry"), Config.GRADES.get("B"),
-                Config.AL_SUBJECTS.get("Combined_Maths"), Config.GRADES.get("A")
-        );
-        printALProfile("Physical Science", physicalScienceResults, 2.9, olResults);
+            StudentProfile studentProfile = new StudentProfile(Config.EDUCATION_LEVELS.get("AL"), generateOLGrades(), getALStream(), generateZScore());
+            for (Integer careerId : Config.CAREERS.values()) {
+                // TODO: Implement this
+            }
 
-        // Physical Science with ICT Stream
-        Map<Integer, Integer> physicalScienceICTResults = Map.of(
-                Config.AL_SUBJECTS.get("Physics"), Config.GRADES.get("B"),
-                Config.AL_SUBJECTS.get("ICT"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Combined_Maths"), Config.GRADES.get("B")
-        );
-        printALProfile("Physical Science with ICT", physicalScienceICTResults, 2.6, olResults);
+            StudentProfile studentProfile = new StudentProfile(Config.EDUCATION_LEVELS.get("UNI"), generateOLGrades(), getALStream(), generateZScore(), generateGPA());
+            for (Integer careerId : Config.CAREERS.values()) {
+                // TODO: Implement this
+            }
 
-        // Biological Science Stream
-        Map<Integer, Integer> bioScienceResults = Map.of(
-                Config.AL_SUBJECTS.get("Biology"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Chemistry"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Physics"), Config.GRADES.get("B")
-        );
-        printALProfile("Biological Science", bioScienceResults, 2.7, olResults);
-
-        // Bio Science with Agriculture Stream
-        Map<Integer, Integer> agricultureResults = Map.of(
-                Config.AL_SUBJECTS.get("Biology"), Config.GRADES.get("B"),
-                Config.AL_SUBJECTS.get("Chemistry"), Config.GRADES.get("B"),
-                Config.AL_SUBJECTS.get("Agriculture"), Config.GRADES.get("A")
-        );
-        printALProfile("Bio Science with Agriculture", agricultureResults, 2.4, olResults);
-    }
-
-    private static void printUniversityPredictions(Map<Integer, Integer> olResults, Map<Integer, Integer> alResults) {
-        // University predictions with GPA
-        printUniProfile("Physical Science",olResults, alResults, 2.9, 3.9);
-        printUniProfile("Physical Science with ICT", olResults, alResults, 2.6, 3.7);
-        printUniProfile("Biological Science", olResults, alResults, 2.7, 3.8);
-        printUniProfile("Bio Science with Agriculture", olResults, alResults, 2.4, 3.6);
-    }
-
-    private static void printALProfile(String streamName, Map<Integer, Integer> alResults,
-                                       double zScore, Map<Integer, Integer> olResults) {
-        CareerCompatibilityProbabilityPredictor prediction = new CareerCompatibilityProbabilityPredictor(olResults, alResults, zScore);
-        System.out.printf("\nAL %s Student Profile (Z-score: %.1f):", streamName, zScore);
-        System.out.println("\n==========================================");
-        prediction.printPredictions(prediction.predictAL());
-    }
-
-    private static void printUniProfile(String streamName,
-                                        Map<Integer, Integer> olResults,
-                                        Map<Integer, Integer> alResults,
-                                        double zScore,
-                                        double gpa) {
-        CareerCompatibilityProbabilityPredictor prediction =
-                new CareerCompatibilityProbabilityPredictor(olResults, alResults, zScore, gpa);
-        System.out.printf("\nUniversity %s Graduate Profile (GPA: %.2f):", streamName, gpa);
-        System.out.println("\n==============================================");
-        prediction.printPredictions(prediction.predictUNI());
+        System.out.println("Generated 1000 Student Profiles");
     }
 
     public static void main(String[] args) throws Exception {
-        DatasetGenerator generator = new DatasetGenerator();
-
-        // Generate datasets
-        generator.generateAllDatasets();
-
-        // Common OL results for all students
-        Map<Integer, Integer> olResults = Map.of(
-                Config.OL_SUBJECTS.get("Maths"), Config.GRADES.get("A"),
-                Config.OL_SUBJECTS.get("Science"), Config.GRADES.get("A"),
-                Config.OL_SUBJECTS.get("English"), Config.GRADES.get("B"),
-                Config.OL_SUBJECTS.get("Sinhala"), Config.GRADES.get("C"),
-                Config.OL_SUBJECTS.get("History"), Config.GRADES.get("B"),
-                Config.OL_SUBJECTS.get("Religion"), Config.GRADES.get("A")
-        );
-
-        printOLPredictions(olResults);
-
-        // AL results for all students
-        Map<Integer, Integer> alResults = Map.of(
-                Config.AL_SUBJECTS.get("Physics"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Chemistry"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Combined_Maths"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Biology"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("ICT"), Config.GRADES.get("A"),
-                Config.AL_SUBJECTS.get("Agriculture"), Config.GRADES.get("A")
-        );
-        printALPredictions(olResults, alResults);
-        printUniversityPredictions(olResults, alResults);
-    }
-}
-
-class CareerCompatibilityProbabilityPredictor {
-    private final Map<Integer, Double> careerPrediction;
-    private final Map<Integer, Integer> olResults;
-    private Map<Integer, Integer> alResults;
-    private double zScore;
-    private double gpa;
-
-    public CareerCompatibilityProbabilityPredictor(Map<Integer, Integer> olResults, Map<Integer, Integer> alResults, double zScore, double gpa) {
-        this.olResults = olResults;
-        this.alResults = alResults;
-        this.zScore = zScore;
-        this.gpa = gpa;
-        this.careerPrediction = new HashMap<>();
-    }
-
-    public CareerCompatibilityProbabilityPredictor(Map<Integer, Integer> olResults, Map<Integer, Integer> alResults, double zScore) {
-        this.olResults = olResults;
-        this.alResults = alResults;
-        this.zScore = zScore;
-        this.careerPrediction = new HashMap<>();
-    }
-
-    public CareerCompatibilityProbabilityPredictor(Map<Integer, Integer> olResults) {
-        this.olResults = olResults;
-        this.careerPrediction = new HashMap<>();
-    }
-
-    public Map<Integer, Double> predictOL() {
-        for (Integer careerId : Config.CAREERS.values()) {
-            careerPrediction.put(careerId, Math.random() * 100);
+        // Generate 1000 Student Profiles with Completed Career Compatibility Probabilities
+        StudentProfileGenerator generator = new StudentProfileGenerator();
+        for (int i = 0; i < 1000; i++) {
+            generator.generateStudentProfiles();
         }
-        return careerPrediction;
-    }
-
-    public Map<Integer, Double> predictAL() {
-        for (Integer careerId : Config.CAREERS.values()) {
-            careerPrediction.put(careerId, Math.random() * 100);
-        }
-        return careerPrediction;
-    }
-
-    public Map<Integer, Double> predictUNI() {
-        for (Integer careerId : Config.CAREERS.values()) {
-            careerPrediction.put(careerId, Math.random() * 100);
-        }
-        return careerPrediction;
-    }
-
-    public void printPredictions(Map<Integer, Double> predictions) {
-        System.out.println("Input Features:");
-        if (olResults != null) {
-            System.out.println("OL Results:");
-            for (Map.Entry<Integer, Integer> entry : olResults.entrySet()) {
-                System.out.println(getSubjectName(entry.getKey()) + ": " + getGradeName(entry.getValue()));
-            }
-        }
-        if (alResults != null) {
-            System.out.println("AL Results:");
-            for (Map.Entry<Integer, Integer> entry : alResults.entrySet()) {
-                System.out.println(getSubjectName(entry.getKey()) + ": " + getGradeName(entry.getValue()));
-            }
-        }
-        if (zScore != 0) {
-            System.out.println("Z-Score: " + zScore);
-        }
-        if (gpa != 0) {
-            System.out.println("GPA: " + gpa);
-        }
-
-        System.out.println("\nPredicted Career Probabilities:");
-        for (Map.Entry<Integer, Double> entry : predictions.entrySet()) {
-            String careerName = getCareerName(entry.getKey());
-            System.out.println(careerName + ": " + entry.getValue() + "%");
-        }
-    }
-
-    private String getSubjectName(int subjectId) {
-        for (Map.Entry<String, Integer> entry : Config.OL_SUBJECTS.entrySet()) {
-            if (entry.getValue() == subjectId) {
-                return entry.getKey();
-            }
-        }
-        for (Map.Entry<String, Integer> entry : Config.AL_SUBJECTS.entrySet()) {
-            if (entry.getValue() == subjectId) {
-                return entry.getKey();
-            }
-        }
-        return "Unknown Subject";
-    }
-
-    private String getGradeName(int gradeId) {
-        for (Map.Entry<String, Integer> entry : Config.GRADES.entrySet()) {
-            if (entry.getValue() == gradeId) {
-                return entry.getKey();
-            }
-        }
-        return "Unknown Grade";
-    }
-
-    private String getCareerName(int careerId) {
-        for (Map.Entry<String, Integer> entry : Config.CAREERS.entrySet()) {
-            if (entry.getValue() == careerId) {
-                return entry.getKey();
-            }
-        }
-        return "Unknown Career";
     }
 }
