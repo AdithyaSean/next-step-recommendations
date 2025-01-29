@@ -19,6 +19,8 @@ public class Generator {
         List<String> lines = new ArrayList<>();
         lines.add(CSV_HEADER_OL);
 
+        Files.createDirectories(Paths.get(Config.MODEL_DIR));
+
         for (int i = 0; i < Config.NUM_STUDENTS; i++) {
             Map<Integer, Integer> olGrades = generateOLGrades();
             Map<String, Double> probabilities = calculateOLProbabilities(olGrades);
@@ -301,3 +303,4 @@ public class Generator {
         Files.write(outputPath, processedLines);
     }
 }
+

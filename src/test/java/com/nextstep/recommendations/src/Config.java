@@ -52,17 +52,17 @@ public class Config {
         AL_STREAMS.put("Bio Science with Agriculture", 3); // Agricultural focus
     }
 
-    // AL Subjects (expanded with missing subjects)
+    // AL Subjects (expanded with missing subjects, unique IDs)
     public static final Map<String, Integer> AL_SUBJECTS = new HashMap<>();
     static {
-        AL_SUBJECTS.put("Physics", 0);
-        AL_SUBJECTS.put("Chemistry", 1);
-        AL_SUBJECTS.put("Combined_Maths", 2);
-        AL_SUBJECTS.put("Biology", 3);
-        AL_SUBJECTS.put("ICT", 4);
-        AL_SUBJECTS.put("Agriculture", 5);
-        AL_SUBJECTS.put("Economics", 6);          // Added for Business compatibility
-        AL_SUBJECTS.put("Business_Studies", 7);   // Added for Business compatibility
+        AL_SUBJECTS.put("Physics", 10);
+        AL_SUBJECTS.put("Chemistry", 11);
+        AL_SUBJECTS.put("Combined_Maths", 12);
+        AL_SUBJECTS.put("Biology", 13);
+        AL_SUBJECTS.put("ICT", 14);
+        AL_SUBJECTS.put("Agriculture", 15);
+        AL_SUBJECTS.put("Economics", 16);
+        AL_SUBJECTS.put("Business_Studies", 17);
     }
 
     // Education level distribution (adjusted for realism)
@@ -94,7 +94,7 @@ public class Config {
         AL_SUBJECTS_BY_STREAM.put(AL_STREAMS.get("Biological Science"), List.of(
                 AL_SUBJECTS.get("Biology"),
                 AL_SUBJECTS.get("Chemistry"),
-                AL_SUBJECTS.get("Physics")  // Retained for systems allowing this combination
+                AL_SUBJECTS.get("Physics")
         ));
 
         // Biological Science with Agriculture focus
